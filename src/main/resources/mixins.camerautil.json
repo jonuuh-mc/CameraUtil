@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.7",
+  "package": "io.jonuuh.camerautil.mixins",
+  "refmap": "mixins.camerautil.refmap.json",
+  "target": "@env(DEFAULT)",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+    "MixinEntityRenderer",
+    "MixinMinecraft"
+  ]
+}

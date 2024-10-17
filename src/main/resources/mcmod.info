@@ -1,0 +1,16 @@
+[
+    {
+        "modid": "camerautil",
+        "name": "CameraUtil",
+        "description": "",
+        "version": "${version}",
+        "mcversion": "${mcversion}",
+        "url": "",
+        "updateUrl": "",
+        "authorList": ["jonuuh"],
+        "credits": "",
+        "logoFile": "",
+        "screenshots": [],
+        "dependencies": []
+    }
+]
