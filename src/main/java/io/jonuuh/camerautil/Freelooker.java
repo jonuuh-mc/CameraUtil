@@ -1,20 +1,37 @@
 package io.jonuuh.camerautil;
 
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.MathHelper;
 
 public class Freelooker
 {
-    public final int initialPovSetting;
-    public final float initialThirdPersonDist;
+    public static Freelooker INSTANCE;
+    private int initThirdPersonView;
+//    private float initialThirdPersonDist;
 
-    public float rotationYaw;
-    public float prevRotationYaw;
+    private float rotationYaw;
+    private float prevRotationYaw;
 
-    public float rotationPitch;
-    public float prevRotationPitch;
+    private float rotationPitch;
+    private float prevRotationPitch;
 
-    public Freelooker(float rotationYaw, float prevRotationYaw, float rotationPitch, float prevRotationPitch, int initialPovSetting, float initialThirdPersonDist)
+    private boolean isActive;
+
+    private boolean canTranslate;
+
+    public static void createInstance()
+    {
+        if (INSTANCE != null)
+        {
+            throw new IllegalStateException("Freelooker instance has already been created");
+        }
+        INSTANCE = new Freelooker();
+    }
+
+    private Freelooker()
+    {
+    }
+
+    public void begin(float rotationYaw, float prevRotationYaw, float rotationPitch, float prevRotationPitch, int initThirdPersonView)
     {
         this.rotationYaw = rotationYaw;
         this.prevRotationYaw = prevRotationYaw;
@@ -22,12 +39,54 @@ public class Freelooker
         this.rotationPitch = rotationPitch;
         this.prevRotationPitch = prevRotationPitch;
 
-        this.initialPovSetting = initialPovSetting;
-        this.initialThirdPersonDist = initialThirdPersonDist;
+        this.initThirdPersonView = initThirdPersonView;
+        this.isActive = true;
+    }
 
-//        System.out.println("constructed freelooker: "
-//                + rotationYaw + " " + rotationPitch + " / "
-//                + prevRotationYaw + " " + prevRotationPitch);
+    public void end()
+    {
+        begin(0, 0, 0, 0, 0); // TODO: not necessary at all really
+        this.isActive = false;
+    }
+
+    public int getInitThirdPersonView()
+    {
+        return initThirdPersonView;
+    }
+
+    public float getRotationYaw()
+    {
+        return rotationYaw;
+    }
+
+    public float getPrevRotationYaw()
+    {
+        return prevRotationYaw;
+    }
+
+    public float getRotationPitch()
+    {
+        return rotationPitch;
+    }
+
+    public float getPrevRotationPitch()
+    {
+        return prevRotationPitch;
+    }
+
+    public boolean isActive()
+    {
+        return isActive;
+    }
+
+    public boolean canTranslate()
+    {
+        return canTranslate;
+    }
+
+    public void setCanTranslate(boolean canTranslate)
+    {
+        this.canTranslate = canTranslate;
     }
 
     /**
@@ -38,6 +97,11 @@ public class Freelooker
      */
     public void setAngles(float yaw, float pitch)
     {
+        if (!isActive)
+        {
+            return;
+        }
+
         float lastPitch = rotationPitch;
         float lastYaw = rotationYaw;
 

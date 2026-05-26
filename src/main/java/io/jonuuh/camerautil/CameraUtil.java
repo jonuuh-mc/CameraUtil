@@ -17,11 +17,13 @@ public class CameraUtil
     public static KeyBinding keyZoom;
     public static KeyBinding keyFreelook;
     public static KeyBinding keyNoclip;
+    public static boolean shouldNoClip = true;
 
     @Mod.EventHandler
     public void FMLInit(FMLInitializationEvent event)
     {
         FovAnimator.createInstance(Minecraft.getMinecraft(), 250, 20);
+        Freelooker.createInstance();
 
         keyZoom = new KeyBinding("CU-Zoom", -98, "CameraUtil");
         keyFreelook = new KeyBinding("CU-Freelook", Keyboard.KEY_F, "CameraUtil");

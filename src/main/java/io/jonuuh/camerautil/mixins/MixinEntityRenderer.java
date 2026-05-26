@@ -33,35 +33,32 @@ public abstract class MixinEntityRenderer
     private float thirdPersonDistanceTemp; // TODO: this can be done better probably
 
     @Unique
-    private Freelooker cameraUtil$freelooker;
-
-    @Unique
     private EaseAnimation cameraUtil$easeAnimation;
 
     //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// ////
     @Redirect(method = "orientCamera", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/Entity;rotationYaw:F"))
-    public float cameraUtil$redirectFieldReadYaw(Entity entity)
+    public float cameraUtil$redirectFieldReadsYaw(Entity entity)
     {
-        return cameraUtil$freelooker != null ? cameraUtil$freelooker.rotationYaw : entity.rotationYaw;
+        return Freelooker.INSTANCE.isActive() ? Freelooker.INSTANCE.getRotationYaw() : entity.rotationYaw;
     }
 
     @Redirect(method = "orientCamera", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/Entity;prevRotationYaw:F"))
-    public float cameraUtil$redirectFieldReadPrevYaw(Entity entity)
+    public float cameraUtil$redirectFieldReadsPrevYaw(Entity entity)
     {
-        return cameraUtil$freelooker != null ? cameraUtil$freelooker.prevRotationYaw : entity.prevRotationYaw;
+        return Freelooker.INSTANCE.isActive() ? Freelooker.INSTANCE.getPrevRotationYaw() : entity.prevRotationYaw;
     }
 
     //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// ////
     @Redirect(method = "orientCamera", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/Entity;rotationPitch:F"))
-    public float cameraUtil$redirectFieldReadPitch(Entity entity)
+    public float cameraUtil$redirectFieldReadsPitch(Entity entity)
     {
-        return cameraUtil$freelooker != null ? cameraUtil$freelooker.rotationPitch : entity.rotationPitch;
+        return Freelooker.INSTANCE.isActive() ? Freelooker.INSTANCE.getRotationPitch() : entity.rotationPitch;
     }
 
     @Redirect(method = "orientCamera", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/Entity;prevRotationPitch:F"))
-    public float cameraUtil$redirectFieldReadPrevPitch(Entity entity)
+    public float cameraUtil$redirectFieldReadsPrevPitch(Entity entity)
     {
-        return cameraUtil$freelooker != null ? cameraUtil$freelooker.rotationPitch : entity.prevRotationPitch;
+        return Freelooker.INSTANCE.isActive() ? Freelooker.INSTANCE.getPrevRotationPitch() : entity.prevRotationPitch;
     }
 
     //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// ////
@@ -72,16 +69,6 @@ public abstract class MixinEntityRenderer
         return CameraUtil.keyNoclip.isKeyDown() ? null : instance.rayTraceBlocks(vec1, vec2);
     }
 
-//    //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// ////
-//    @Redirect(method = "renderHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemRenderer;renderItemInFirstPerson(F)V"))
-//    private void disableRenderHand(ItemRenderer instance, float partialTicks)
-//    {
-//        if (cameraUtil$freelooker == null)
-//        {
-//            instance.renderItemInFirstPerson(partialTicks);
-//        }
-//    }
-
     //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// ////
     @Redirect(method = "updateCameraAndRender",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/entity/EntityPlayerSP;setAngles(FF)V"))
@@ -89,60 +76,32 @@ public abstract class MixinEntityRenderer
     {
         if (CameraUtil.keyFreelook.isKeyDown())
         {
-            if (cameraUtil$freelooker == null)
+            if (!Freelooker.INSTANCE.isActive())
             {
                 playerSP.setAngles(mouseYaw, mousePitch); // TODO: almost definitely redundant but better safe than sorry?
-                cameraUtil$freelooker = new Freelooker(playerSP.rotationYaw, playerSP.prevRotationYaw, playerSP.rotationPitch, playerSP.prevRotationPitch,
-                        mc.gameSettings.thirdPersonView, thirdPersonDistance); // TODO: maybe could/should make this a singleton?
+                Freelooker.INSTANCE.begin(playerSP.rotationYaw, playerSP.prevRotationYaw, playerSP.rotationPitch, playerSP.prevRotationPitch,
+                        mc.gameSettings.thirdPersonView);
 
-                if (cameraUtil$freelooker.initialPovSetting == 0)
+                if (Freelooker.INSTANCE.getInitThirdPersonView() == 0)
                 {
                     mc.gameSettings.thirdPersonView = 1;
                 }
             }
 
-            cameraUtil$freelooker.setAngles(mouseYaw, mousePitch);
+            Freelooker.INSTANCE.setAngles(mouseYaw, mousePitch);
             mc.renderGlobal.setDisplayListEntitiesDirty(); // TODO: check where/how this is called in vanilla
-
-            if (cameraUtil$freelooker.initialPovSetting == 0)
-            {
-                if (cameraUtil$easeAnimation == null)
-                {
-                    cameraUtil$easeAnimation = new EaseAnimation(mc, EaseType.CUBIC_IN_OUT,
-                            400, 0.4F, cameraUtil$freelooker.initialThirdPersonDist, false);
-                }
-
-                if (!cameraUtil$easeAnimation.isFinished())
-                {
-                    float step = (float) cameraUtil$easeAnimation.getCurrentStep();
-                    thirdPersonDistance = step;
-                    thirdPersonDistanceTemp = step;
-//                    System.out.println(thirdPersonDistance + " " + thirdPersonDistanceTemp);
-                }
-            }
         }
         else
         {
-            // animation cleanup
-            if (cameraUtil$easeAnimation != null)
+            if (Freelooker.INSTANCE.isActive())
             {
-                thirdPersonDistance = cameraUtil$freelooker.initialThirdPersonDist;
-                thirdPersonDistanceTemp = cameraUtil$freelooker.initialThirdPersonDist;
-
-                cameraUtil$easeAnimation = null;
-            }
-
-            // freelooker cleanup
-            if (cameraUtil$freelooker != null)
-            {
-                if (mc.gameSettings.thirdPersonView != cameraUtil$freelooker.initialPovSetting)
+                if (mc.gameSettings.thirdPersonView != Freelooker.INSTANCE.getInitThirdPersonView())
                 {
-                    mc.gameSettings.thirdPersonView = cameraUtil$freelooker.initialPovSetting;
+                    mc.gameSettings.thirdPersonView = Freelooker.INSTANCE.getInitThirdPersonView();
                 }
 
                 mc.renderGlobal.setDisplayListEntitiesDirty(); // TODO: check where/how this is called in vanilla
-                cameraUtil$freelooker = null;
-//                thirdPersonDistance = 4F;
+                Freelooker.INSTANCE.end();
             }
 
             playerSP.setAngles(mouseYaw, mousePitch);
