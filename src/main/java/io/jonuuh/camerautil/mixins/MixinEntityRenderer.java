@@ -66,7 +66,7 @@ public abstract class MixinEntityRenderer
     public MovingObjectPosition cameraUtil$redirectCameraClippingRayTrace(WorldClient instance, Vec3 vec1, Vec3 vec2)
     {
         // redirecting to null is fine because rayTraceBlocks returns null if no hit anyway
-        return CameraUtil.keyNoclip.isKeyDown() ? null : instance.rayTraceBlocks(vec1, vec2);
+        return CameraUtil.shouldNoClip ? null : instance.rayTraceBlocks(vec1, vec2);
     }
 
     //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// ////
@@ -113,22 +113,6 @@ public abstract class MixinEntityRenderer
 //    public void modifyTranslation(Args args)
 //    {
 //        args.set(1, ((float) args.get(1)) - 1F);
-//    }
-//
-//    @ModifyArg(method = "orientCamera",
-//            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;rotate(FFFF)V", ordinal = 9), index = 0)
-//    public float modifyYaw(float angle)
-//    {
-////        float yaw = Freelooker.INSTANCE.prevRotationYaw + (Freelooker.INSTANCE.rotationYaw - Freelooker.INSTANCE.prevRotationYaw) * Freelooker.INSTANCE.partialTicks + 180.0F;
-//        return cameraUtil$freelooker != null ? cameraUtil$freelooker.rotationYaw : angle;
-//    }
-//
-//    @ModifyArg(method = "orientCamera",
-//            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;rotate(FFFF)V", ordinal = 8), index = 0)
-//    public float modifyPitch(float angle)
-//    {
-////        float pitch = Freelooker.INSTANCE.prevRotationPitch + (Freelooker.INSTANCE.rotationPitch - Freelooker.INSTANCE.prevRotationPitch) * Freelooker.INSTANCE.partialTicks;
-//        return cameraUtil$freelooker != null ? cameraUtil$freelooker.rotationPitch : angle;
 //    }
 
     //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// ////
