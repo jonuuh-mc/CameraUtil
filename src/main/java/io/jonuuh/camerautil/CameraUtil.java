@@ -9,7 +9,7 @@ import org.lwjgl.input.Keyboard;
 
 @Mod(
         modid = "camerautil",
-        version = "1.0.0",
+        version = "1.0.1",
         acceptedMinecraftVersions = "[1.8.9]"
 )
 public class CameraUtil
